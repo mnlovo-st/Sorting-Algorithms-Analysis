@@ -1,0 +1,418 @@
+/*
+ * CSCI 215 - Sorting Project
+ * Saif Mussa
+ */
+
+#include <iostream>
+#include <fstream>
+#include <ctime>
+#include <iomanip>
+using namespace std;
+
+const int SIZE = 100000;
+
+
+bool readFromFile(const string& filename, int arr[], int size)
+{
+    ifstream inFile(filename);
+    if (!inFile)
+    {
+        cerr << "Error: Could not open file: " << filename << endl;
+        return false;
+    }
+    for (int i = 0; i < size; i++)
+        inFile >> arr[i];
+    inFile.close();
+    return true;
+}
+
+
+void copyArray(int src[], int dst[], int size)
+{
+    for (int i = 0; i < size; i++)
+        dst[i] = src[i];
+}
+
+
+
+void BubbleSortV1(int arr[], int size)
+{
+    for (int pass = 0; pass < size - 1; pass++)
+    {
+        for (int j = 0; j < size - pass - 1; j++)
+        {
+            if (arr[j] > arr[j + 1])
+            {
+              
+                int temp = arr[j];
+                arr[j] = arr[j + 1];
+                arr[j + 1] = temp;
+            }
+        }
+    }
+}
+
+
+void BubbleSortV2(int arr[], int size)
+{
+    bool swapped;
+    for (int pass = 0; pass < size - 1; pass++)
+    {
+        swapped = false;
+        for (int j = 0; j < size - pass - 1; j++)
+        {
+            if (arr[j] > arr[j + 1])
+            {
+                int temp = arr[j];
+                arr[j] = arr[j + 1];
+                arr[j + 1] = temp;
+                swapped = true;
+            }
+        }
+        if (!swapped)
+            break;
+    }
+}
+
+void SelectionSortV1(int arr[], int size)
+{
+    for (int i = 0; i < size - 1; i++)
+    {
+        int minIndex = i;
+        for (int j = i + 1; j < size; j++)
+        {
+            if (arr[j] < arr[minIndex])
+                minIndex = j;
+        }
+        if (minIndex != i)
+        {
+            int temp = arr[i];
+            arr[i] = arr[minIndex];
+            arr[minIndex] = temp;
+        }
+    }
+}
+
+void SelectionSortV2(int arr[], int size)
+{
+    int left = 0;
+    int right = size - 1;
+
+    while (left < right)
+    {
+        int minIndex = left;
+        int maxIndex = left;
+
+        for (int j = left; j <= right; j++)
+        {
+            if (arr[j] < arr[minIndex]) minIndex = j;
+            if (arr[j] > arr[maxIndex]) maxIndex = j;
+        }
+
+        if (minIndex != left)
+        {
+            int temp = arr[left];
+            arr[left] = arr[minIndex];
+            arr[minIndex] = temp;
+
+            if (maxIndex == left)
+                maxIndex = minIndex;
+        }
+
+        if (maxIndex != right)
+        {
+            int temp = arr[right];
+            arr[right] = arr[maxIndex];
+            arr[maxIndex] = temp;
+        }
+
+        left++;
+        right--;
+    }
+}
+
+void InsertionSortV1(int arr[], int size)
+{
+    for (int i = 1; i < size; i++)
+    {
+        int key = arr[i];
+        int j = i - 1;
+
+        while (j >= 0 && arr[j] > key)
+        {
+            arr[j + 1] = arr[j];
+            j--;
+        }
+        arr[j + 1] = key;
+    }
+}
+
+void InsertionSortV2(int arr[], int size)
+{
+    for (int i = 1; i < size; i++)
+    {
+        int key = arr[i];
+
+        int lo = 0, hi = i - 1, pos = i;
+        while (lo <= hi)
+        {
+            int mid = lo + (hi - lo) / 2;
+            if (arr[mid] > key)
+            {
+                pos = mid;
+                hi = mid - 1;
+            }
+            else
+            {
+                lo = mid + 1;
+            }
+        }
+
+        for (int j = i - 1; j >= pos; j--)
+            arr[j + 1] = arr[j];
+
+        arr[pos] = key;
+    }
+}
+
+void merge(int arr[], int left, int mid, int right)
+{
+    int n1 = mid - left + 1;
+    int n2 = right - mid;
+
+    int* L = new int[n1];
+    int* R = new int[n2];
+
+    for (int i = 0; i < n1; i++) L[i] = arr[left + i];
+    for (int j = 0; j < n2; j++) R[j] = arr[mid + 1 + j];
+
+    int i = 0, j = 0, k = left;
+    while (i < n1 && j < n2)
+    {
+        if (L[i] <= R[j]) arr[k++] = L[i++];
+        else               arr[k++] = R[j++];
+    }
+    while (i < n1) arr[k++] = L[i++];
+    while (j < n2) arr[k++] = R[j++];
+
+    delete[] L;
+    delete[] R;
+}
+
+void MergeSortV1(int arr[], int left, int right)
+{
+    if (left >= right) return;          
+
+    int mid = left + (right - left) / 2;
+    MergeSortV1(arr, left, mid);
+    MergeSortV1(arr, mid + 1, right);
+    merge(arr, left, mid, right);
+}
+
+void MergeSortV1(int arr[], int size)
+{
+    MergeSortV1(arr, 0, size - 1);
+}
+
+const int THRESHOLD = 32;
+
+void insertionSortSubarray(int arr[], int left, int right)
+{
+    for (int i = left + 1; i <= right; i++)
+    {
+        int key = arr[i];
+        int j = i - 1;
+        while (j >= left && arr[j] > key)
+        {
+            arr[j + 1] = arr[j];
+            j--;
+        }
+        arr[j + 1] = key;
+    }
+}
+
+void MergeSortV2(int arr[], int left, int right)
+{
+    if (right - left < THRESHOLD)
+    {
+        insertionSortSubarray(arr, left, right);
+        return;
+    }
+
+    int mid = left + (right - left) / 2;
+    MergeSortV2(arr, left, mid);
+    MergeSortV2(arr, mid + 1, right);
+    merge(arr, left, mid, right);
+}
+
+void MergeSortV2(int arr[], int size)
+{
+    MergeSortV2(arr, 0, size - 1);
+}
+
+ 
+double measureTime(void (*sortFunc)(int[], int), int src[], int work[], int size)
+{
+    copyArray(src, work, size);       
+
+    clock_t start = clock();
+    sortFunc(work, size);
+    clock_t end = clock();
+
+    return double(end - start) / CLOCKS_PER_SEC;
+}
+
+double measureTimeMerge(void (*sortFunc)(int[], int), int src[], int work[], int size)
+{
+    return measureTime(sortFunc, src, work, size);
+}
+
+
+void printResults(const string& arrayType,
+    double times[][3],    
+    const string names[], int numAlgo)
+{
+    cout << "\n=========================================================" << endl;
+    cout << "  Input: " << arrayType << endl;
+    cout << "=========================================================" << endl;
+    cout << left << setw(22) << "Algorithm"
+        << right << setw(10) << "Run 1(s)"
+        << setw(10) << "Run 2(s)"
+        << setw(10) << "Run 3(s)"
+        << setw(12) << "Average(s)" << endl;
+    cout << string(64, '-') << endl;
+
+    for (int i = 0; i < numAlgo; i++)
+    {
+        double avg = (times[i][0] + times[i][1] + times[i][2]) / 3.0;
+        cout << left << setw(22) << names[i]
+            << right << fixed << setprecision(4)
+            << setw(10) << times[i][0]
+            << setw(10) << times[i][1]
+            << setw(10) << times[i][2]
+            << setw(12) << avg << endl;
+    }
+}
+
+
+int main()
+{
+
+    int* randomArr = new int[SIZE];
+    int* sortedArr = new int[SIZE];
+    int* backwardsArr = new int[SIZE];
+    int* work = new int[SIZE];  
+
+    if (!readFromFile("randomList.txt", randomArr, SIZE)) return 1;
+    if (!readFromFile("Sorted.txt", sortedArr, SIZE)) return 1;
+    if (!readFromFile("SortedBackwards.txt", backwardsArr, SIZE)) return 1;
+
+    cout << "Files loaded successfully. SIZE = " << SIZE << endl;
+
+    const int NUM_ALGO = 8;
+    string names[NUM_ALGO] = {
+        "BubbleSortV1", "BubbleSortV2",
+        "SelectionSortV1", "SelectionSortV2",
+        "InsertionSortV1", "InsertionSortV2",
+        "MergeSortV1", "MergeSortV2"
+    };
+
+    double randomTimes[NUM_ALGO][3] = {};
+    double sortedTimes[NUM_ALGO][3] = {};
+    double backwardTimes[NUM_ALGO][3] = {};
+ 
+    for (int run = 0; run < 3; run++)
+    {
+        cout << "\n--- Run " << (run + 1) << " ---" << endl;
+
+       
+        randomTimes[0][run] = measureTime(BubbleSortV1, randomArr, work, SIZE);
+        cout << "BubbleSortV1    (random) done: " << randomTimes[0][run] << "s" << endl;
+
+        randomTimes[1][run] = measureTime(BubbleSortV2, randomArr, work, SIZE);
+        cout << "BubbleSortV2    (random) done: " << randomTimes[1][run] << "s" << endl;
+
+        randomTimes[2][run] = measureTime(SelectionSortV1, randomArr, work, SIZE);
+        cout << "SelectionSortV1 (random) done: " << randomTimes[2][run] << "s" << endl;
+
+        randomTimes[3][run] = measureTime(SelectionSortV2, randomArr, work, SIZE);
+        cout << "SelectionSortV2 (random) done: " << randomTimes[3][run] << "s" << endl;
+
+        randomTimes[4][run] = measureTime(InsertionSortV1, randomArr, work, SIZE);
+        cout << "InsertionSortV1 (random) done: " << randomTimes[4][run] << "s" << endl;
+
+        randomTimes[5][run] = measureTime(InsertionSortV2, randomArr, work, SIZE);
+        cout << "InsertionSortV2 (random) done: " << randomTimes[5][run] << "s" << endl;
+
+        randomTimes[6][run] = measureTime(MergeSortV1, randomArr, work, SIZE);
+        cout << "MergeSortV1     (random) done: " << randomTimes[6][run] << "s" << endl;
+
+        randomTimes[7][run] = measureTime(MergeSortV2, randomArr, work, SIZE);
+        cout << "MergeSortV2     (random) done: " << randomTimes[7][run] << "s" << endl;
+
+      
+        sortedTimes[0][run] = measureTime(BubbleSortV1, sortedArr, work, SIZE);
+        cout << "BubbleSortV1    (sorted) done: " << sortedTimes[0][run] << "s" << endl;
+
+        sortedTimes[1][run] = measureTime(BubbleSortV2, sortedArr, work, SIZE);
+        cout << "BubbleSortV2    (sorted) done: " << sortedTimes[1][run] << "s" << endl;
+
+        sortedTimes[2][run] = measureTime(SelectionSortV1, sortedArr, work, SIZE);
+        cout << "SelectionSortV1 (sorted) done: " << sortedTimes[2][run] << "s" << endl;
+
+        sortedTimes[3][run] = measureTime(SelectionSortV2, sortedArr, work, SIZE);
+        cout << "SelectionSortV2 (sorted) done: " << sortedTimes[3][run] << "s" << endl;
+
+        sortedTimes[4][run] = measureTime(InsertionSortV1, sortedArr, work, SIZE);
+        cout << "InsertionSortV1 (sorted) done: " << sortedTimes[4][run] << "s" << endl;
+
+        sortedTimes[5][run] = measureTime(InsertionSortV2, sortedArr, work, SIZE);
+        cout << "InsertionSortV2 (sorted) done: " << sortedTimes[5][run] << "s" << endl;
+
+        sortedTimes[6][run] = measureTime(MergeSortV1, sortedArr, work, SIZE);
+        cout << "MergeSortV1     (sorted) done: " << sortedTimes[6][run] << "s" << endl;
+
+        sortedTimes[7][run] = measureTime(MergeSortV2, sortedArr, work, SIZE);
+        cout << "MergeSortV2     (sorted) done: " << sortedTimes[7][run] << "s" << endl;
+
+    
+        backwardTimes[0][run] = measureTime(BubbleSortV1, backwardsArr, work, SIZE);
+        cout << "BubbleSortV1    (desc)   done: " << backwardTimes[0][run] << "s" << endl;
+
+        backwardTimes[1][run] = measureTime(BubbleSortV2, backwardsArr, work, SIZE);
+        cout << "BubbleSortV2    (desc)   done: " << backwardTimes[1][run] << "s" << endl;
+
+        backwardTimes[2][run] = measureTime(SelectionSortV1, backwardsArr, work, SIZE);
+        cout << "SelectionSortV1 (desc)   done: " << backwardTimes[2][run] << "s" << endl;
+
+        backwardTimes[3][run] = measureTime(SelectionSortV2, backwardsArr, work, SIZE);
+        cout << "SelectionSortV2 (desc)   done: " << backwardTimes[3][run] << "s" << endl;
+
+        backwardTimes[4][run] = measureTime(InsertionSortV1, backwardsArr, work, SIZE);
+        cout << "InsertionSortV1 (desc)   done: " << backwardTimes[4][run] << "s" << endl;
+
+        backwardTimes[5][run] = measureTime(InsertionSortV2, backwardsArr, work, SIZE);
+        cout << "InsertionSortV2 (desc)   done: " << backwardTimes[5][run] << "s" << endl;
+
+        backwardTimes[6][run] = measureTime(MergeSortV1, backwardsArr, work, SIZE);
+        cout << "MergeSortV1     (desc)   done: " << backwardTimes[6][run] << "s" << endl;
+
+        backwardTimes[7][run] = measureTime(MergeSortV2, backwardsArr, work, SIZE);
+        cout << "MergeSortV2     (desc)   done: " << backwardTimes[7][run] << "s" << endl;
+    }
+
+    
+    printResults("Random Array (100,000 integers)", randomTimes, names, NUM_ALGO);
+    printResults("Sorted Ascending (100,000 integers)", sortedTimes, names, NUM_ALGO);
+    printResults("Sorted Descending (100,000 integers)", backwardTimes, names, NUM_ALGO);
+
+   
+    delete[] randomArr;
+    delete[] sortedArr;
+    delete[] backwardsArr;
+    delete[] work;
+
+    system("pause");
+
+    return 0;
+}

@@ -134,7 +134,6 @@ void selection_double(int arr[], int n)
         if (maxI == left) {
             maxI = minI;
         }
-
         // move max
         int temp2 = arr[right];
         arr[right] = arr[maxI];

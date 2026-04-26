@@ -24,3 +24,5 @@ This repository contains the source code and performance analysis for the CSCI 2
 
 ---
 **Course:** CSCI 215 - Data Structures and Algorithms  
+**University:** American University of Ras Al Khaimah (AURAK)  
+**Student:** Sa Mussa 
